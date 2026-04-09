@@ -1,3 +1,5 @@
+from itertools import product
+
 import scrapy
 
 
@@ -7,10 +9,23 @@ class ChocolatespySpider(scrapy.Spider):
     start_urls = ["https://www.chocolate.co.uk/collections/all"]
 
     def parse(self, response):
-        products = response.css("product-item")
+        products = response.xpath("//product-item")
         for product in products:
+            name = product.xpath('.//a[contains(@class, "product-item-meta__title")]/text()').get()
+            prices = product.xpath('.//span[contains(@class, "price")]/text()').getall()
+            prices = [p.strip() for p in prices if p.strip()]
+            price = prices[0] if prices else None
+            
+            url = product.xpath('.//div[contains(@class, "product-item-meta")]//a/@href').get()
+            url = response.urljoin(url).strip()
+
             yield {
-                'name': product.css("a.product-item-meta__title::text").get(),
-                'price': product.css('span.price').get().replace('<span class="price">\n              <span class="visually-hidden">Sale price</span>',"").replace('</span>',""),
-                'url': product.css('div.product-item-meta a').attrib['href'],
-            }
+                'name': name,
+                'price': price,
+                'url': url
+            }   
+        
+        next_page = response.xpath('//link[@rel="next"]/@href').get()
+        if next_page is not None:
+            next_page_url = "https://www.chocolate.co.uk" + next_page
+            yield response.follow(next_page_url, callback=self.parse)
