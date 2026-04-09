@@ -14,6 +14,11 @@ NEWSPIDER_MODULE = "chocolatescrapper.spiders"
 
 ADDONS = {}
 
+ITEM_PIPELINES = {
+    'chocolatescrapper.pipelines.PriceToUsdPipeline': 300,
+    'chocolatescrapper.pipelines.duplicatepiPipelines': 400,
+}
+
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = "chocolatescrapper (+http://www.yourdomain.com)"
