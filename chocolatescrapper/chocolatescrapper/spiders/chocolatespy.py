@@ -10,20 +10,14 @@ class ChocolatespySpider(scrapy.Spider):
 
     def parse(self, response):
         products = response.xpath("//product-item")
-        for product in products:
-            name = product.xpath('.//a[contains(@class, "product-item-meta__title")]/text()').get()
-            prices = product.xpath('.//span[contains(@class, "price")]/text()').getall()
-            prices = [p.strip().split("£")[-1]   for p in prices if p.strip()]
-            price = prices[0] if prices else None
-            
-            url = product.xpath('.//div[contains(@class, "product-item-meta")]//a/@href').get()
-            url = response.urljoin(url).strip()
 
-            yield {
-                'name': name,
-                'price': price,
-                'url': url
-            }   
+        
+        for product in products:
+            chocolate = ChocolateItemLoader(item=ChocolatesProduct(), selector=product)
+            chocolate.add_xpath('name' , './/a[contains(@class, "product-item-meta__title")]/text()')
+            chocolate.add_xpath('price' , './/span[contains(@class, "price")]/text()')
+            chocolate.add_xpath('url' , './/div[contains(@class, "product-item-meta")]//a/@href')
+            yield chocolate.load_item()   
         
         next_page = response.xpath('//link[@rel="next"]/@href').get()
         if next_page is not None:
