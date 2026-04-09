@@ -1,5 +1,5 @@
 from chocolatescrapper.items import ChocolatesProduct
-
+from chocolatescrapper.itemloades import ChocolateItemLoader
 import scrapy
 
 
@@ -13,7 +13,7 @@ class ChocolatespySpider(scrapy.Spider):
         for product in products:
             name = product.xpath('.//a[contains(@class, "product-item-meta__title")]/text()').get()
             prices = product.xpath('.//span[contains(@class, "price")]/text()').getall()
-            prices = [p.strip() for p in prices if p.strip()]
+            prices = [p.strip().split("£")[-1]   for p in prices if p.strip()]
             price = prices[0] if prices else None
             
             url = product.xpath('.//div[contains(@class, "product-item-meta")]//a/@href').get()
