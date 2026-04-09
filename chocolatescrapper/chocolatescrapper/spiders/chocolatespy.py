@@ -1,4 +1,4 @@
-from itertools import product
+from chocolatescrapper.items import ChocolatesProduct
 
 import scrapy
 
