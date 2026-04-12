@@ -1,5 +1,5 @@
 import scrapy
-
+import re
 
 class WebspySpider(scrapy.Spider):
     name = "Webspy"
@@ -10,17 +10,26 @@ class WebspySpider(scrapy.Spider):
         products = response.xpath("//a[.//div[contains(@class,'ProductItemCard__info')]]")
 
         for product in products:
-            # ✅ Correct name XPath
             name = product.xpath(".//div[contains(@class,'ProductItemCard__info--wrap__title')]//text()").get()
+            prices = product.xpath(".//div[contains(@class,'ProductItemCard__info--wrap__prices--inner')]//div/text()").getall()
 
-            # ✅ Correct price XPath
-            prices = product.xpath(".//div[contains(@class,'ProductItemCard__info--wrap__prices')]//div/text()").getall()
-
+            # Clean text
             prices = [p.strip().replace('\xa0', ' ') for p in prices if p.strip()]
 
-            original_price = prices[0] if prices else None
-            discounted_price = prices[1] if len(prices) > 1 else None
-            PUM = prices[2] if len(prices) > 2 else None
+            # ✅ Separate real prices and PUM
+            real_prices = []
+            pum_price = None
+
+            for p in prices:
+                if re.match(r'^\$\s?\d[\d.,]*$', p):
+                    real_prices.append(p)
+                else:
+                    pum_price = p
+
+            # ✅ Assign correctly
+            original_price = real_prices[0] if len(real_prices) > 0 else None
+            discounted_price = real_prices[1] if len(real_prices) > 1 else None
+            PUM = pum_price
 
             # ✅ URL (this part was correct)
             url = product.xpath("./@href").get()
