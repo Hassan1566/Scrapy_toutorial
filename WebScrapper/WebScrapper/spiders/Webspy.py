@@ -4,9 +4,21 @@ import re
 class WebspySpider(scrapy.Spider):
     name = "Webspy"
     allowed_domains = ["www.drogueriascolsubsidio.com"]
-    start_urls = ["https://www.drogueriascolsubsidio.com/medicamentos"]
+    start_urls = ["https://www.drogueriascolsubsidio.com"]
 
     def parse(self, response):
+        categories = response.xpath('//ul[contains(@class,"HeaderContainer__navbar--menu__links")]//li/a')
+
+        for category in categories:
+            name = category.xpath(".//text()").get()
+            url = category.xpath("./@href").get()
+            if url and url.startswith('/'):
+                full_url = response.urljoin(url)
+
+            yield response.follow(full_url, callback=self.parse_product, meta={'category': name})
+
+    def parse_product(self, response):
+        category = response.meta.get('category')
         products = response.xpath("//a[.//div[contains(@class,'ProductItemCard__info')]]")
 
         for product in products:
@@ -24,7 +36,8 @@ class WebspySpider(scrapy.Spider):
                 if re.match(r'^\$\s?\d[\d.,]*$', p):
                     real_prices.append(p)
                 else:
-                    pum_price = p
+                    pum_price_raw = re.sub(r'^\w+\s+\w+\s+', '', p)
+                    pum_price = pum_price_raw
 
             # ✅ Assign correctly
             original_price = real_prices[0] if len(real_prices) > 0 else None
@@ -36,6 +49,7 @@ class WebspySpider(scrapy.Spider):
             url = response.urljoin(url)
 
             yield {
+                'category': category,
                 'name': name,
                 'original_price': original_price,
                 'discounted_price': discounted_price,
@@ -47,4 +61,4 @@ class WebspySpider(scrapy.Spider):
 
         if next_page:
             next_page_url = "https://www.drogueriascolsubsidio.com" + next_page
-            yield response.follow(next_page_url, callback=self.parse)
+            yield response.follow(next_page_url, callback=self.parse_product, meta={'category': category})
