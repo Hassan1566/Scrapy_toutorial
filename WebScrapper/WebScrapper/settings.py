@@ -19,7 +19,7 @@ ADDONS = {}
 #USER_AGENT = "WebScrapper (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = False
+ROBOTSTXT_OBEY = True
 
 # Concurrency and throttling settings
 #CONCURRENT_REQUESTS = 16
