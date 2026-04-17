@@ -59,6 +59,6 @@ class PhilcospySpider(scrapy.Spider):
             "product_name": product_name,
             "product_sku": product_sku,
             "product_description": product_description, 
-            "image_url": image_url,
+            "image_url": image_url + "",
             "product_url": product_url,
         }
