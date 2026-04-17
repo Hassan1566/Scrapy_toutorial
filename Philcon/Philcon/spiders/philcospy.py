@@ -4,7 +4,7 @@ import scrapy
 class PhilcospySpider(scrapy.Spider):
     name = "philcospy"
     allowed_domains = ["philcoiluminacion.com"]
-    start_urls = ["https://philcoiluuminacion.com"]
+    start_urls = ["https://philcoiluminacion.com"]
 
     def parse(self, response):
         categories = response.xpath("//ul[@id='Slider-template--17845290631339__collection_list']/li")
@@ -56,9 +56,9 @@ class PhilcospySpider(scrapy.Spider):
         yield {
             "cat_name": cat_name,
             "sub_name": sub_name,
-            "product_url": product_url,
             "product_name": product_name,
             "product_sku": product_sku,
             "product_description": product_description, 
-            "image_url": image_url
+            "image_url": image_url,
+            "product_url": product_url,
         }
