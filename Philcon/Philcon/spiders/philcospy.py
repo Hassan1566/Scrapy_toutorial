@@ -10,6 +10,7 @@ class PhilcospySpider(scrapy.Spider):
         categories = response.xpath("//ul[@id='Slider-template--17845290631339__collection_list']/li")
         for category in categories:
             cat_name = category.xpath(".//h3/a/text()").get()
+            #print("cat_name", cat_name)
             cat_url = category.xpath(".//h3/a/@href").get()
             cat_url = response.urljoin(cat_url)
             yield scrapy.Request(cat_url, callback=self.parse_category, meta={'cat_name': cat_name})
@@ -20,45 +21,93 @@ class PhilcospySpider(scrapy.Spider):
         items = response.xpath("//ul[contains(@class, 'multicolumn-list')]/li")
     
         for item in items:
-            links = item.xpath(".//a")
-            
-            for link in links:
-                sub_name = "".join(link.xpath(".//text()").getall()).replace("->", "").strip()
-                sub_url = response.urljoin(link.xpath("./@href").get())
-                yield scrapy.Request(sub_url, callback=self.parse_products_list, meta={'cat_name': cat_name, 'sub_name': sub_name})
+            # 1. Get the Heading (Subcategory 1)
+            sub_cat_text = item.xpath(".//h3//text()").getall()
+            sub_cat1 = "".join(sub_cat_text).strip()
+            #print("sub_cat1", sub_cat1)
+            sub_url1 = item.xpath(".//h3/a/@href").get()
+        
+            # 2. Check for deeper links (Subcategory 2) inside the 'rte' div
+            sub_cat2_links = item.xpath(".//div[contains(@class, 'rte')]//a")
+        
+            if sub_cat2_links:
+                # If sub_cat2 exists, loop through them
+                for link in sub_cat2_links:
+                    sub_cat2 = "".join(link.xpath(".//text()").getall()).replace("->", "").strip()
+                    #print("sub_cat2", sub_cat2)
+                    sub_url2 = response.urljoin(link.xpath("./@href").get())
+                
+                    yield scrapy.Request(
+                        sub_url2, 
+                        callback=self.parse_products_list, 
+                        meta={
+                            'cat_name': cat_name, 
+                            'subcat1_name': sub_cat1, 
+                            'subcat2_name': sub_cat2, 
+                        }   
+                    )
+            else:
+                # If no sub_cat2, use the sub_cat from the H3
+                if sub_url1:
+                    full_sub_url = response.urljoin(sub_url1)
+                    yield scrapy.Request(
+                        full_sub_url, 
+                        callback=self.parse_products_list, 
+                        meta={
+                            'cat_name': cat_name, 
+                            'subcat1_name': sub_cat1,
+                            'subcat2_name': ""
+                        }
+                    )
     
     def parse_products_list(self, response):
         cat_name = response.meta['cat_name']
-        sub_name = response.meta['sub_name']
-        items = response.xpath("//ul[contains(@class, 'product-grid')]/li")
+        subcat1_name = response.meta['subcat1_name']
+        subcat2_name = response.meta['subcat2_name']
+        items = response.xpath("//a[contains(@class,'full-unstyled-link')]/@href").getall()
     
         for item in items:
-            product_url = response.urljoin(item.xpath(".//a/@href").get())
-            yield scrapy.Request(product_url, callback=self.parse_products_details, meta={'cat_name': cat_name, 'sub_name': sub_name})
+            product_url = response.urljoin(item)
+            #print("product_url", product_url)
+            yield scrapy.Request(
+                product_url, 
+                callback=self.parse_products_details, 
+                meta={
+                    'cat_name': cat_name, 
+                    'subcat1_name': subcat1_name,
+                    'subcat2_name': subcat2_name
+                })
+        next_page = response.xpath("//a[@aria-label='Página siguiente']/@href").get()
+
+        if next_page:
+            yield scrapy.Request(
+                url=response.urljoin(next_page),
+                callback=self.parse_products_list, 
+                meta={'cat_name': cat_name, 'subcat1_name': subcat1_name, 'subcat2_name': subcat2_name} 
+            )
     
     def parse_products_details(self, response):
         cat_name = response.meta['cat_name']
-        sub_name = response.meta['sub_name']
+        subcat1_name = response.meta['subcat1_name']
+        subcat2_name = response.meta['subcat2_name']
         product_url = response.url
         product_name = response.xpath("//h1/text()").get()
-        image_url = response.xpath("//div[contains(@class,'product__media-wrapper')]//img/@src").get()
-        product_sku = response.xpath("//span[contains(@class,'product__sku')]/text()").get()
+        image_url = response.xpath("//div[contains(@class,'product__media')]//img/@src").get()
+        product_sku = response.xpath("normalize-space(//p[contains(@id, 'Sku')])").get()
         product_description = response.xpath("//div[contains(@class,'product__description')]//text()").getall()
 
-        # Clean Description
-        product_description = [x.strip() for x in product_description if x.strip()]
-        product_description = " ".join(product_description).strip()
-        
-        # Clean Image Url
-        image_url = response.urljoin(image_url)        
+        raw_description_data = [x.strip() for x in product_description if x.strip()]
+        clean_description = " ".join(raw_description_data).strip()
+        image_url = response.urljoin(image_url)
 
         
         yield {
             "cat_name": cat_name,
-            "sub_name": sub_name,
+            "subcat1_name": subcat1_name,
+            "subcat2_name": subcat2_name.replace("´", ""),
             "product_name": product_name,
-            "product_sku": product_sku,
-            "product_description": product_description, 
-            "image_url": image_url + "",
+            "product_sku": product_sku.replace("SKU:", ""),
+            "product_description": clean_description.replace(" ", ""), 
+            "image_url": image_url,
             "product_url": product_url,
         }
