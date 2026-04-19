@@ -1,4 +1,5 @@
 import scrapy
+from Philcon.items import PhilconItem
 
 
 class PhilcospySpider(scrapy.Spider):
@@ -87,27 +88,18 @@ class PhilcospySpider(scrapy.Spider):
             )
     
     def parse_products_details(self, response):
-        cat_name = response.meta['cat_name']
-        subcat1_name = response.meta['subcat1_name']
-        subcat2_name = response.meta['subcat2_name']
-        product_url = response.url
-        product_name = response.xpath("//h1/text()").get()
+        item = PhilconItem()
+        item['category'] = response.meta['cat_name']
+        item['subcategory1'] = response.meta['subcat1_name']
+        item['subcategory2'] = response.meta['subcat2_name']
+        item['product_url'] = response.url
+        item['product_name'] = response.xpath("//h1/text()").get()
         image_url = response.xpath("//div[contains(@class,'product__media')]//img/@src").get()
-        product_sku = response.xpath("normalize-space(//p[contains(@id, 'Sku')])").get()
+        item['image_url'] = response.urljoin(image_url)
+        item['product_sku'] = response.xpath("normalize-space(//p[contains(@id, 'Sku')])").get()
         product_description = response.xpath("//div[contains(@class,'product__description')]//text()").getall()
 
         raw_description_data = [x.strip() for x in product_description if x.strip()]
-        clean_description = " ".join(raw_description_data).strip()
-        image_url = response.urljoin(image_url)
-
+        item['product_description'] = " ".join(raw_description_data).strip()
         
-        yield {
-            "cat_name": cat_name,
-            "subcat1_name": subcat1_name,
-            "subcat2_name": subcat2_name.replace("´", ""),
-            "product_name": product_name,
-            "product_sku": product_sku.replace("SKU:", ""),
-            "product_description": clean_description.replace(" ", ""), 
-            "image_url": image_url,
-            "product_url": product_url,
-        }
+        yield item

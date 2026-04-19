@@ -1,12 +1,13 @@
-# Define here the models for your scraped items
-#
-# See documentation in:
-# https://docs.scrapy.org/en/latest/topics/items.html
-
 import scrapy
 
 
 class PhilconItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    category = scrapy.Field()
+    subcategory1 = scrapy.Field()
+    subcategory2 = scrapy.Field()
+    product_name = scrapy.Field()
+    product_sku = scrapy.Field()
+    product_description = scrapy.Field()
+    image_url = scrapy.Field()
+    product_url = scrapy.Field()
+
