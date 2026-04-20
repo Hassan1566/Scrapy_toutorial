@@ -8,6 +8,14 @@
 from itemadapter import ItemAdapter
 
 
-class PhilconPipeline:
+class DuplicatesPipeline:
+    def __init__(self):
+        self.url_seen = set()
+
     def process_item(self, item, spider):
-        return item
+        adapter = ItemAdapter(item)
+        if adapter['product_url'] in self.url_seen:
+            raise DropItem(f"Duplicate product url found: {adapter['product_url']}")
+        else:
+            self.url_seen.add(adapter['product_url'])
+            return item
