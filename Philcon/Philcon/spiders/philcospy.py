@@ -1,7 +1,6 @@
 import scrapy
 from Philcon.items import PhilconItem
-
-
+from Philcon.itemloaders import PhilconItemLoader
 class PhilcospySpider(scrapy.Spider):
     name = "philcospy"
     allowed_domains = ["philcoiluminacion.com"]
@@ -88,18 +87,14 @@ class PhilcospySpider(scrapy.Spider):
             )
     
     def parse_products_details(self, response):
-        item = PhilconItem()
-        item['category'] = response.meta['cat_name']
-        item['subcategory1'] = response.meta['subcat1_name']
-        item['subcategory2'] = response.meta['subcat2_name']
-        item['product_url'] = response.url
-        item['product_name'] = response.xpath("//h1/text()").get()
-        image_url = response.xpath("//div[contains(@class,'product__media')]//img/@src").get()
-        item['image_url'] = response.urljoin(image_url)
-        item['product_sku'] = response.xpath("normalize-space(//p[contains(@id, 'Sku')])").get()
-        product_description = response.xpath("//div[contains(@class,'product__description')]//text()").getall()
-
-        raw_description_data = [x.strip() for x in product_description if x.strip()]
-        item['product_description'] = " ".join(raw_description_data).strip()
+        item = PhilconItemLoader(item=PhilconItem(), selector=response)
+        item.add_value('category', response.meta['cat_name'])
+        item.add_value('subcategory1', response.meta['subcat1_name'])
+        item.add_value('subcategory2', response.meta['subcat2_name'])
+        item.add_value('product_url', response.url)
         
-        yield item
+        item.add_xpath('product_name', "//h1/text()")
+        item.add_xpath('product_description', "//div[contains(@class,'product__description')]//text()") 
+        item.add_xpath('product_sku', "//p[contains(@id, 'Sku')]/text()")
+        item.add_xpath('image_url', "//div[contains(@class,'product__media')]//img/@src")
+        yield item.load_item()
