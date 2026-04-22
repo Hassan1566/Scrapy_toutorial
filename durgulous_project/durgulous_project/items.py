@@ -6,7 +6,15 @@
 import scrapy
 
 
-class DurgulousProjectItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class DrugItem(scrapy.Item):
+    category = scrapy.Field()
+    subcategory1 = scrapy.Field()
+    subcategory2 = scrapy.Field()
+    product_name = scrapy.Field()
+    brand = scrapy.Field()
+    old_price = scrapy.Field()
+    price = scrapy.Field()
+    image_url = scrapy.Field()
+    product_url = scrapy.Field()
+    id_invima = scrapy.Field()
+    presentation = scrapy.Field()
