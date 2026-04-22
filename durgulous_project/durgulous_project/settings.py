@@ -43,17 +43,17 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 8
 DOWNLOAD_DELAY = 1.5
 
 # Crawl queues
-DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
-SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+#DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+#SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 
 
 
 # 3. Allow pausing and resuming (keeps the fingerprint set in Redis)
-SCHEDULER_PERSIST = True
+#SCHEDULER_PERSIST = True
 
 # 4. Redis Connection Settings (Localhost is default)
-REDIS_HOST = 'localhost'
-REDIS_PORT = 6379
+#REDIS_HOST = 'localhost'
+#REDIS_PORT = 6379
 
 
 # Disable cookies (enabled by default)
