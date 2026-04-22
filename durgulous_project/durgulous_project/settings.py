@@ -15,6 +15,22 @@ NEWSPIDER_MODULE = "durgulous_project.spiders"
 ADDONS = {}
 
 
+DOWNLOAD_HANDLERS = {
+    "http": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+    "https": "scrapy_playwright.handler.ScrapyPlaywrightDownloadHandler",
+}
+
+PLAYWRIGHT_LAUNCH_OPTIONS = {
+    "headless": False
+}
+
+TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+
+
+DOWNLOAD_TIMEOUT = 60
+PLAYWRIGHT_DEFAULT_NAVIGATION_TIMEOUT = 60000 # 60 seconds
+
+
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = "durgulous_project (+http://www.yourdomain.com)"
 
@@ -22,9 +38,23 @@ ADDONS = {}
 ROBOTSTXT_OBEY = True
 
 # Concurrency and throttling settings
-#CONCURRENT_REQUESTS = 16
-CONCURRENT_REQUESTS_PER_DOMAIN = 1
-DOWNLOAD_DELAY = 1
+CONCURRENT_REQUESTS = 16
+CONCURRENT_REQUESTS_PER_DOMAIN = 8
+DOWNLOAD_DELAY = 1.5
+
+# Crawl queues
+DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+
+
+
+# 3. Allow pausing and resuming (keeps the fingerprint set in Redis)
+SCHEDULER_PERSIST = True
+
+# 4. Redis Connection Settings (Localhost is default)
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+
 
 # Disable cookies (enabled by default)
 #COOKIES_ENABLED = False
@@ -58,9 +88,9 @@ DOWNLOAD_DELAY = 1
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    "durgulous_project.pipelines.DurgulousProjectPipeline": 300,
-#}
+ITEM_PIPELINES = {
+    "durgulous_project.pipelines.DurgulousProjectPipeline": 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
