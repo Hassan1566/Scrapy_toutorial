@@ -6,7 +6,14 @@
 import scrapy
 
 
-class ApiScriptingItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class FarmaciaItem(scrapy.Item):
+    SKU = scrapy.Field()
+    Item = scrapy.Field()
+    Brand = scrapy.Field()
+    Price = scrapy.Field()
+    SalePrice = scrapy.Field()
+    Image = scrapy.Field()
+    Stock = scrapy.Field()
+    Category = scrapy.Field()
+    SubCategory1 = scrapy.Field()
+    SubCategory2 = scrapy.Field()
