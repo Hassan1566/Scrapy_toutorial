@@ -1,6 +1,7 @@
 import scrapy
 import json
 from API_Scripting.items import FarmaciaItem
+from API_Scripting.itemloaders import FarmaciaTeapaItemLoader
 
 class FarmaciaTepaSpider(scrapy.Spider):
     name = "scrap"
@@ -48,22 +49,19 @@ class FarmaciaTepaSpider(scrapy.Spider):
         self.logger.info(f"Retrieved {len(products)} products for group {response.meta.get('group_name')}")
 
         for p in products:
-            item = FarmaciaItem()
-            item['SKU'] = p.get('SKU')
-            item['Item'] = p.get('NAME')
-            item['Brand'] = p.get('BRAND')
-            item['Price'] = p.get('PRICE_UNIT')
-            item['SalePrice'] = p.get('PUBLIC_PRICE')
-            item['SubCategory2'] = p.get('CATEGORY_NAME')
-            item['SubCategory1'] = p.get('GROUP_NAME')
-            item['Category'] = p.get('DEPARTMENT_NAME')
-            item['Stock'] = p.get('UNITS_STOCK')
+            loader = FarmaciaTeapaItemLoader(item=FarmaciaItem(), response=response)
+            loader.add_value('SKU', p.get('SKU'))
+            loader.add_value('Item', p.get('NAME'))
+            loader.add_value('Brand', p.get('BRAND'))
+            loader.add_value('Price', p.get('PRICE_UNIT'))
+            loader.add_value('SalePrice', p.get('PUBLIC_PRICE'))
+            loader.add_value('SubCategory2', p.get('CATEGORY_NAME'))
+            loader.add_value('SubCategory1', p.get('GROUP_NAME'))
+            loader.add_value('Category', p.get('DEPARTMENT_NAME'))
+            loader.add_value('Stock', p.get('UNITS_STOCK'))
+            loader.add_value('Image', p.get('PHOTO_FILE'))
             
-            base = p.get('PHOTO_URL_BASE', '')
-            file = p.get('PHOTO_FILE', '')
-            item['Image'] = f"{base}{file}" if base and file else None
-            
-            yield item
+            yield loader.load_item()
 
         # Pagination
         if products and len(products) >= 100: 
