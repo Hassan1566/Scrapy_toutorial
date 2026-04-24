@@ -23,16 +23,12 @@ class FarmaciaTepaSpider(scrapy.Spider):
                 'TOKEN': "",
                 'FIREBASE_TOKEN': "",
             }
-            heaers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
-            }
             
             yield scrapy.Request(
                 url='https://farmaciatepa.com.mx/api/products/searchProductsBy',
                 method='POST',
                 body=json.dumps(payload),
                 callback=self.parse_products,
-                headers=heaers,
                 meta={'payload': payload, 'group_name': group.get('NAME')}
             )
 
