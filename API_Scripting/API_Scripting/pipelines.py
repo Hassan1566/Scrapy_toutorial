@@ -15,12 +15,12 @@ class ApiScriptingPipeline:
 
 class JsonWriterPipeline:
     def open_spider(self):
-        self.file = open("items.jsonl", "w")
+        self.file = open("items.jsonl", "w", encoding="utf-8")
 
     def close_spider(self):
         self.file.close()
 
     def process_item(self, item):
-        line = json.dumps(ItemAdapter(item).asdict()) + "\n"
+        line = json.dumps(ItemAdapter(item).asdict(),ensure_ascii=False) + "\n"
         self.file.write(line)
         return item
