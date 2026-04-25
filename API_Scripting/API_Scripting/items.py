@@ -10,6 +10,7 @@ class FarmaciaItem(scrapy.Item):
     SKU = scrapy.Field()
     Item = scrapy.Field()
     Brand = scrapy.Field()
+    URLSKU = scrapy.Field()
     Price = scrapy.Field()
     SalePrice = scrapy.Field()
     Image = scrapy.Field()

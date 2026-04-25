@@ -67,9 +67,10 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    "API_Scripting.pipelines.ApiScriptingPipeline": 300,
-#}
+ITEM_PIPELINES = {
+   "API_Scripting.pipelines.JsonWriterPipeline": 400,
+   "API_Scripting.pipelines.ApiScriptingPipeline": 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -93,11 +94,10 @@ AUTOTHROTTLE_TARGET_CONCURRENCY = 1
 #HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
 
 # Set settings whose default value is deprecated to a future-proof value
-
+TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_FIELDS=['Date', 'Canal', 'Category', 'SubCategory1', 'SubCategory2', 'Subcategory3', 'Marca', 'Modelo',
                       'SKU', 'UPC', 'Item', 'ItemCharacteristics', 'URLSKU', 'Image', 'Price', 'SalePrice',
                       'Shipment Cost', 'Sales Flag', 'Store ID', 'Store Name', 'Store Address', 'Stock',
                       'UPC WM', 'FinalPrice', 'Brand']
-FEED_EXPORT_ENCODING = 'utf-8'
 
-FEED_FORMAT = 'csv'
+

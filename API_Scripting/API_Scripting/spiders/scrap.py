@@ -14,24 +14,23 @@ class FarmaciaTepaSpider(scrapy.Spider):
 
     def parse_categories(self, response):
         data = json.loads(response.text)
-        # Your CURL showed a list of 'groups' within the category response
-        for group in data.get('groups', []):
+        for dept in data.get('departments', []):
             payload = {
-                'TYPE': "GROUP",
-                'TYPE_ID': int(group.get('ID')),
+                'TYPE': "DEPARTMENT",
+                'TYPE_ID': dept.get('ID'),
                 'PAGE': 1,
                 'ORDER': "Relevancia",
                 'TOKEN': "",
                 'FIREBASE_TOKEN': "",
             }
-            
+
             yield scrapy.Request(
                 url='https://farmaciatepa.com.mx/api/products/searchProductsBy',
                 method='POST',
                 body=json.dumps(payload),
                 callback=self.parse_products,
-                meta={'payload': payload, 'group_name': group.get('NAME')}
-            )
+                meta={'payload': payload}
+                )
 
     def parse_products(self, response):
 
@@ -46,21 +45,21 @@ class FarmaciaTepaSpider(scrapy.Spider):
         # Use the key 'products' as seen in your log screenshot
         products = data.get('products', [])
         
-        self.logger.info(f"Retrieved {len(products)} products for group {response.meta.get('group_name')}")
+        #self.logger.info(f"Retrieved {len(products)} products for group {response.meta.get('group_name')}")
 
         for p in products:
             loader = FarmaciaTeapaItemLoader(item=FarmaciaItem(), response=response)
             loader.add_value('SKU', p.get('SKU'))
             loader.add_value('Item', p.get('NAME'))
             loader.add_value('Brand', p.get('BRAND'))
+            loader.add_value('URLSKU', p.get('SKU'))
             loader.add_value('Price', p.get('PRICE_UNIT'))
             loader.add_value('SalePrice', p.get('PUBLIC_PRICE'))
             loader.add_value('SubCategory2', p.get('CATEGORY_NAME'))
             loader.add_value('SubCategory1', p.get('GROUP_NAME'))
             loader.add_value('Category', p.get('DEPARTMENT_NAME'))
             loader.add_value('Stock', p.get('UNITS_STOCK'))
-            loader.add_value('Image', p.get('PHOTO_FILE'))
-            
+            loader.add_value('Image', p.get('PHOTO_CODE'))
             yield loader.load_item()
 
         # Pagination

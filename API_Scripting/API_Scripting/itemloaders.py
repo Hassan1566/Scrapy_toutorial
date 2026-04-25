@@ -19,24 +19,19 @@ class FarmaciaTeapaItemLoader(ItemLoader):
         return values.strip()
 
     @staticmethod
-    def final_url_fix(value):
-        if not value:
-            return ''
-        
-        # 1. If it's already a full URL, just return it
-        if value.startswith('http'):
-            return value
-            
-        # 2. If it's just the filename, wrap it in the domain
-        # Check if it's a UUID (needs SM/) or a SKU (needs root)
-        path = ""
-        if "-" in value and len(value) > 20:
-            path = "SM/"
-            
-        return f"https://farmaciatepa.com.mx/FT/img/products/{path}{value}"
-
-    # Apply only this one processor to the Image field
-    Image_in = MapCompose(final_url_fix)
+    def process_tepa_image(values):
+        if values:
+            base_url = "https://farmaciatepa.com.mx/FT/img/products/MD/"
+            return f"{base_url}{values}.webp"
+        return ""
+    
+    @staticmethod
+    def process_sku(values):
+        if values:
+            return f"https://farmaciatepa.com.mx/#/product_view/{values}"
+        return ""
+    URLSKU_in = MapCompose(process_sku)
+    Image_in = MapCompose(process_tepa_image)
     Price_in = MapCompose(clean_price)
     Stock_in = MapCompose(clean_stock)
     Item_in = MapCompose(clean_text)
@@ -46,4 +41,3 @@ class FarmaciaTeapaItemLoader(ItemLoader):
     SubCategory2_in = MapCompose(clean_text)
     SKU_in = MapCompose(clean_text)
     SalePrice_in = MapCompose(clean_price)
-    Image_in = MapCompose(final_url_fix)
