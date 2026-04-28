@@ -80,16 +80,16 @@ class VtexSpider(scrapy.Spider):
 
     def parse_products(self, response):
         raw_data = json.loads(response.text)
-        search_data = raw_data.get('data', {}).get('productSearch', {})
-        products = search_data.get('products', [])
+        search_data = (raw_data.get('data') or {}).get('productSearch') or {}
+        products = search_data.get('products') or []
     
         for p in products:
             print(f"DEBUG URL PATH: {p.get('link')}")
-            items = p.get('items', [])
+            items = p.get('items') or []
             if not items: continue
                 
             first_item = items[0]
-            offer = first_item.get('sellers', [{}])[0].get('commertialOffer', {})
+            offer = (first_item.get('sellers') or [{}])[0].get('commertialOffer') or {}
 
             # Use the custom Loader we just created
             loader = ProductLoader(item=ProductItem(), response=response) 
@@ -122,21 +122,21 @@ class VtexSpider(scrapy.Spider):
                     loader.add_value('subcat3', levels[3])
             
             # Extract Images
-            images = p.get('items', [{}])[0].get('images', [])
+            images = first_item.get('images') or []
             if images:
                 loader.add_value('image_url', images[0].get('imageUrl'))
         
             # Prices
-            prices = p.get('priceRange', {})
-            loader.add_value('list_price', prices.get('listPrice', {}).get('lowPrice'))
-            loader.add_value('discounted_price', prices.get('sellingPrice', {}).get('lowPrice'))
+            prices = p.get('priceRange') or {}
+            loader.add_value('list_price', (prices.get('listPrice') or {}).get('lowPrice'))
+            loader.add_value('discounted_price', (prices.get('sellingPrice') or {}).get('lowPrice'))
         
             loader.add_value('stock', offer.get('AvailableQuantity'))
         
             # Specs loop
-            for group in p.get('specificationGroups', []):
-                for spec in group.get('specifications', []):
-                    val = spec.get('values', [None])[0]
+            for group in (p.get('specificationGroups') or []):
+                for spec in (group.get('specifications') or []):
+                    val = (spec.get('values') or [None])[0]
                     name = spec.get('name')
                 
                     if name == 'ID Invima': loader.add_value('invima', val)
